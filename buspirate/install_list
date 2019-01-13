@@ -1,0 +1,5 @@
+yasl_cli,/usr/bin
+libyasl_buspirate.so,/usr/lib
+yasl/buspirate.h,/usr/include/yasl
+yasl/i2c.h,/usr/include/yasl
+yasl/tsl2561sparkfun.h,/usr/include/yasl

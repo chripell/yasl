@@ -1,0 +1,28 @@
+# Maintainer: Christian Pellegrin <chripell@fsfe.org>
+pkgname=yasl
+pkgver=20190113
+pkgrel=1
+pkgdesc="Yet Another Sensor library"
+arch=('i686' 'x86_64')
+url="https://github.com/chripell/yasl"
+license=('Apache')
+depends=()
+
+build() {
+    cd ..
+    make
+}
+
+package() {
+    cd ..
+    while read l; do
+	FROM=`echo $l | cut -d \, -f 1`
+	TO=`echo $l | cut -d \, -f 2`
+	mkdir -p $pkgdir/$TO
+	cp -a $FROM $pkgdir/$TO
+    done < install_list
+}
+
+pkgver() {
+    date '+%Y%m%d'
+}
