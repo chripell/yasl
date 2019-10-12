@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import yasl.buspirate as bp
 import yasl.tcs34725 as dev
