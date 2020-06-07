@@ -52,12 +52,12 @@ for r in range(0, 257, 64):
                       rgb[0], rgb[1], rgb[2],
                       xyz[0], xyz[1], xyz[2],
                       x, y))
-            # print("%03d %03d %03d: %03d %03d %03d: %.3f %.3f %.3f: %.3f %.3f"
-            #       % (
-            #           r, g, b,
-            #           rgb[0], rgb[1], rgb[2],
-            #           xyz[0], xyz[1], xyz[2],
-            #           x, y))
+            print("%03d %03d %03d: %03d %03d %03d: %.3f %.3f %.3f: %.3f %.3f"
+                  % (
+                      r, g, b,
+                      rgb[0], rgb[1], rgb[2],
+                      xyz[0], xyz[1], xyz[2],
+                      x, y))
 
 window = Gtk.Window(title="sRGB tester")
 window.show()
