@@ -1,6 +1,6 @@
 from pydbus import SystemBus
-import pprint
-from typing import List, Dict, Any
+import struct
+from typing import List, Dict, Any, Callable
 
 NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
 NUS_CHARACTERISTIC_RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'
@@ -17,14 +17,11 @@ class NUS:
         self.notify = None
         self.prefix = None
         self.read_buffer = []
+        self.cb = None
 
     def find(self, mac: str = '', name: str = '') -> bool:
         root = self.bus.get('org.bluez', '/')
         all = root.GetManagedObjects()
-        # DELME START
-        # pp = pprint.PrettyPrinter(indent=4)
-        # pp.pprint(all)
-        # DELME END
         self.prefix = None
         for k, v in all.items():
             if 'org.bluez.Device1' in v:
@@ -37,7 +34,6 @@ class NUS:
                 if name != '' and name not in v['org.bluez.Device1'].get(
                         'Name', ''):
                     continue
-                print("DELME {}".format(k))
                 self.prefix = k
                 break
         if self.prefix is None:
@@ -87,16 +83,24 @@ class NUS:
     def write(self, data: bytes):
         if self.rx is None:
             raise RuntimeError
-        self.rx.WriteValue(data, {})
+        arr = struct.unpack('{}B'.format(len(data)), data)
+        self.rx.WriteValue(arr, {})
 
     def read(self) -> List[bytes]:
-        ret = self.read_buffer
+        ret = b''.join(self.read_buffer)
         self.read_buffer = []
         return ret
 
-    def start_read(self):
+    def start_read_buffered(self):
         if self.tx is None:
             raise RuntimeError
+        self.notify = self.tx.PropertiesChanged.connect(self.on_read_buf)
+        self.tx.StartNotify()
+
+    def start_read(self, cb: Callable[[bytes], None]):
+        if self.tx is None:
+            raise RuntimeError
+        self.cb = cb
         self.notify = self.tx.PropertiesChanged.connect(self.on_read)
         self.tx.StartNotify()
 
@@ -106,8 +110,17 @@ class NUS:
             self.notify.Disconnect()
             self.notify = None
 
-    def on_read(self, iface: str, props: Dict[str, Any], lst: List[str]):
+    def on_read_buf(self, iface: str, props: Dict[str, Any], lst: List[str]):
         v = props.get('Value', None)
         if v is not None:
-            print(v)
-            self.read_buffer.append(''.join([chr(i) for i in v]))
+            self.read_buffer.append(
+                struct.pack('{}B'.format(len(v)), *v)
+            )
+
+    def on_read(self, iface: str, props: Dict[str, Any], lst: List[str]):
+        if self.cb is None:
+            raise RuntimeError
+        v = props.get('Value', None)
+        if v is not None:
+            self.cb(
+                struct.pack('{}B'.format(len(v)), *v))
