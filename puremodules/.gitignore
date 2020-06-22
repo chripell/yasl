@@ -2,3 +2,4 @@ _build
 *.zip
 README.html
 sdk
+protocol_test

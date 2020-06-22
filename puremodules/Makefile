@@ -35,7 +35,6 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/bsp/bsp.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_btn_ble.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_nfc.c \
-  $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -58,8 +57,8 @@ SRC_FILES += \
   $(LIB_DIR)/supersensor.c \
   $(LIB_DIR)/apds9250.c \
   $(LIB_DIR)/p1234701ct.c \
-
-
+  $(PROJ_DIR)/main.c \
+  $(PROJ_DIR)/protocol.c
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -174,7 +173,10 @@ LDFLAGS += --specs=nano.specs -lc -lnosys
 .PHONY: $(TARGETS) default all clean help flash flash_softdevice
 
 # Default target - first one defined
-default: app_dfu_package.zip
+default: app_dfu_package.zip protocol_test
+
+protocol_test: protocol_test.c protocol.c protocol.h
+	cc -Wall -o protocol_test -I. protocol_test.c
 
 app_dfu_package.zip: nrf52832_xxaa _build/nrf52832_xxaa.hex
 	nrfutil pkg generate --hw-version 52 --sd-req 0x8C --application-version 4 \

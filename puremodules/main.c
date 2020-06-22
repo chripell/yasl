@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "lib/ble_driver.h"
 #include "nordic_common.h"
 #include "nrf.h"
 #include "ble_hci.h"
@@ -27,6 +28,7 @@
 #include "app_util_platform.h"
 #include "bsp.h"
 #include "bsp_btn_ble.h"
+#include "protocol.h"
 
 
 #include <stdbool.h>
@@ -185,6 +187,12 @@ static void gap_params_init(void)
 /**@snippet [Handling the data received over BLE] */
 static void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t length)
 {
+  if (length > 2 && (p_data[0] == '>'  || p_data[0] == '<'  || p_data[0] == '}')) {
+#define MAX_RESPONSE 32
+    uint8_t resp[MAX_RESPONSE];
+    int n = prepare_twi_response(&m_twi_master, resp, MAX_RESPONSE,
+				 nrf_drv_twi_tx, nrf_drv_twi_rx);
+  } else {
     app_uart_put(p_data[0]);
     uint8_t lengthble = 13;
     uint8_t *ble_string[lengthble];
@@ -273,7 +281,7 @@ static void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t lengt
         break;
       }
     }
-
+  }
     //Code to put ble received messages into uart
 
     /*for (uint32_t i = 0; i < length; i++)
