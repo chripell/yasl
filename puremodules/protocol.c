@@ -19,7 +19,7 @@
 
 #define MAXB 16
 
-int prepare_twi_response(nrf_drv_twi_t const *p_instance, uint8_t *buf, int n,
+int prepare_twi_response(uint8_t *buf, int n,
                          twi_tx_f txf, twi_rx_f rxf) {
   /*   uint8_t txb[MAXB]; */
   /*   uint8_t rxb[MAXB]; */

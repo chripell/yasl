@@ -1,5 +1,3 @@
-#define _PROTOCOL_TESTING 1
-
 #include "protocol.h"
 
 

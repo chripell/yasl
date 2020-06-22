@@ -175,6 +175,19 @@ static void gap_params_init(void)
 }
 
 
+static uint32_t twi_tx(uint8_t addr,
+		       uint8_t const *buffer,
+		       uint8_t length,
+		       bool no_stop) {
+  return nrf_drv_twi_tx(&m_twi_master, addr, buffer, length, no_stop);
+}
+
+static uint32_t twi_rx(uint8_t addr,
+		       uint8_t *buffer,
+		       uint8_t length) {
+  return nrf_drv_twi_rx(&m_twi_master, addr, buffer, length);
+}
+
 /**@brief Function for handling the data from the Nordic UART Service.
  *
  * @details This function will process the data received from the Nordic UART BLE Service and send
@@ -190,8 +203,8 @@ static void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t lengt
   if (length > 2 && (p_data[0] == '>'  || p_data[0] == '<'  || p_data[0] == '}')) {
 #define MAX_RESPONSE 32
     uint8_t resp[MAX_RESPONSE];
-    int n = prepare_twi_response(&m_twi_master, resp, MAX_RESPONSE,
-				 nrf_drv_twi_tx, nrf_drv_twi_rx);
+    int n = prepare_twi_response(resp, MAX_RESPONSE,
+				 twi_tx, twi_rx);
   } else {
     app_uart_put(p_data[0]);
     uint8_t lengthble = 13;
