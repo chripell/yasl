@@ -15,13 +15,31 @@ modify the file `private.pem`.
 ## Prerequisites
 
 You need:
-
-* `pip install nrfutil` for the Nordic tool which creates the signed
-  zip file.
-  
+ 
 * `pacman -S arm-none-eabi-gcc` or equivalent on other distributions
   (or you need to download the toolchain from
   [ARM](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)).
+
+* Download the Nordic SDK version 12.20 from [the Nordic download
+  page](https://www.nordicsemi.com/Software-and-tools/Software/nRF5-SDK/Download).
+
+* Unzip its content into the sdk directory:
+  ```shell
+  mkdir sdk
+  cd sdk
+  unzip ../nRF5SDK1220.zip
+  ```
+
+* Change the variables in the file
+  `sdk/components/toolchain/gcc/Makefile.posix` to match the toolchain
+  you installed. For the mentioned toolchain available in Arch Linux:
+  ```shell
+  GNU_INSTALL_ROOT := /usr/
+  GNU_PREFIX := arm-none-eabi
+  ```
+
+* `pip install nrfutil` for the Nordic tool which creates the signed
+  zip file.
   
 ## Building
 
