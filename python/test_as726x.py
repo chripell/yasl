@@ -32,6 +32,12 @@ if as726x.get_version() == as726x.AS7261:
         print("DUV", as726x.get_duv())
     print("Time per read in ms: %d" % (
         tot_t / n * 1000.0))
+    as726x.start_measure()
+    while True:
+        (done, m) = as726x.check_measure()
+        if done:
+            print("Measure poll ", m)
+            break
 else:
     print(as726x.get_all_values())
 #as726x.set_bulb(0)

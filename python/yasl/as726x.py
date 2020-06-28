@@ -252,12 +252,23 @@ class AS726x_SERIAL:
         return m
 
     def measure(self):
-        self.chat("ATBURST=1,1", "OK")
+        self.start_measure()
+        return self.end_measure()
+
+    def end_measure(self):
         s = self.chat(None, ".*")
         r = re.match(", ".join((self.FLOAT,) * 3), s[0])
         if r is None:
             return None
         return [float(r[i]) for i in range(1, 4)]
+
+    def start_measure(self):
+        self.chat("ATBURST=1,1", "OK")
+
+    def check_measure(self):
+        if self.ser.inWaiting() > 0:
+            return True, self.end_measure()
+        return False, None
 
     # 0: 12.5mA
     # 1: 25mA
