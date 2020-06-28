@@ -128,10 +128,18 @@ class AS726x_I2C:
     # Give this function a byte from 0 to 255.
     # Time will be 2.8ms * [integration value]
     def set_integration(self, val: int):
+        if val < 1:
+            val = 1
+        if val > 255:
+            val = 255
+        self.int_time_ms = val * 2.8
         self.write_reg(self.INT_T, val)
 
     def set_integration_ms(self, val: float):
         self.set_integration(int(val / 2.8))
+
+    def get_integration_ms(self) -> float:
+        return self.int_time_ms
 
     def measure(self):
         self.clear_data()
@@ -212,15 +220,16 @@ class AS726x_SERIAL:
     # AS7262 -> 403Ex OK
 
     def __init__(self, port: str):
-        self.ser = serial.Serial(port, 115200, timeout=1)
+        self.ser = serial.Serial(port, 115200, timeout=5)
+        self.soft_reset()
         self.chat("AT", "OK")
         ver = self.chat(
             "ATVERHW",
-            self.HEXD + self.HEX + "x OK")[1]
+            "0x40" + self.HEX + " OK")[1]
         self.ver = int(ver, 16)
         self.chat("ATTCSMD=2", "OK")
-        if self.ver == self.AS7261:
-            self.set_interval(255)
+        self.chat("ATBURST=0", "OK")
+        self.set_interval(1)
 
     def get_version(self):
         return self.ver
@@ -243,14 +252,12 @@ class AS726x_SERIAL:
         return m
 
     def measure(self):
-        # If you enable double read, ser_interval to 1!
-        # self.chat("ATBURST=2", "OK")
-        # self.chat(None, r"(\d+), (\d+), (\d+), (\d+), (\d+), (\d+)")
-        # r = self.chat(None, r"(\d+), (\d+), (\d+), (\d+), (\d+), (\d+)")
-        self.chat("ATBURST=1", "OK")
-        r = self.chat(None, r"(\d+), (\d+), (\d+), (\d+), (\d+), (\d+)")
-        self.chat("ATBURST=0", ".*OK")
-        return [int(r[i]) for i in range(1, 7)]
+        self.chat("ATBURST=1,1", "OK")
+        s = self.chat(None, ".*")
+        r = re.match(", ".join((self.FLOAT,) * 3), s[0])
+        if r is None:
+            return None
+        return [float(r[i]) for i in range(1, 4)]
 
     # 0: 12.5mA
     # 1: 25mA
@@ -259,7 +266,7 @@ class AS726x_SERIAL:
     def set_bulb_current(self, current: int):
         if current > 0b11:
             current = 0b11
-        v = int(self.chat("ATLEDC", self.HEX + "x OK")[1], 16)
+        v = int(self.chat("ATLEDC", "0x" + self.HEX + " OK")[1], 16)
         v &= ~(3 << 4)
         v |= (current << 4)
         self.chat("ATLEDC=%d" % v, "OK")
@@ -278,7 +285,7 @@ class AS726x_SERIAL:
     def set_indicator_current(self, current: int):
         if current > 0b11:
             current = 0b11
-        v = int(self.chat("ATLEDC", self.HEX + "x OK")[1], 16)
+        v = int(self.chat("ATLEDC", "0x" + self.HEX + " OK")[1], 16)
         v &= ~(3 << 0)
         v |= (current << 0)
         self.chat("ATLEDC=%d" % v, "OK")
@@ -304,13 +311,16 @@ class AS726x_SERIAL:
         self.chat("ATINTRVL=%d" % val, "OK")
 
     def soft_reset(self):
-        self.chat("ATSRST", "OK")
+        self.chat("ATSRST", ".*")
 
     def get_temperature(self) -> Optional[float]:
         return float(self.chat("ATTEMP", self.FLOAT + " OK")[1])
 
-    def get_XYZ(self) -> Optional[List[float]]:
-        r = self.chat("ATXYZC", ", ".join((self.FLOAT,) * 3) + " OK")
+    def get_XYZ(self, cal=True) -> Optional[List[float]]:
+        cmd = "ATXYZR"
+        if cal:
+            cmd = "ATXYZC"
+        r = self.chat(cmd, ", ".join((self.FLOAT,) * 3) + " OK")
         if r is None:
             return None
         return [float(r[i]) for i in range(1, 4)]
@@ -345,8 +355,11 @@ class AS726x_SERIAL:
             return None
         return float(r[1])
 
-    def get_all_values(self) -> Optional[List[float]]:
-        r = self.chat("ATCDATA", ", ".join((self.FLOAT,) * 6) + " OK")
+    def get_all_values(self, cal=True) -> Optional[List[float]]:
+        cmd = "ATDATA"
+        if cal:
+            cmd = "ATCDATA"
+        r = self.chat(cmd, ", ".join((self.FLOAT,) * 6) + " OK")
         if r is None:
             return None
         return [float(r[i]) for i in range(1, 7)]
