@@ -175,8 +175,8 @@ LDFLAGS += --specs=nano.specs -lc -lnosys
 # Default target - first one defined
 default: app_dfu_package.zip protocol_test
 
-protocol_test: protocol_test.c protocol.c protocol.h
-	cc -Wall -o protocol_test -I. protocol_test.c
+protocol_test: protocol_test.c protocol.c
+	cc -Wall -o $@ -I. $^
 
 app_dfu_package.zip: nrf52832_xxaa _build/nrf52832_xxaa.hex
 	nrfutil pkg generate --hw-version 52 --sd-req 0x8C --application-version 4 \

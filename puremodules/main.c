@@ -200,11 +200,13 @@ static uint32_t twi_rx(uint8_t addr,
 /**@snippet [Handling the data received over BLE] */
 static void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t length)
 {
-  if (length > 2 && (p_data[0] == '>'  || p_data[0] == '<'  || p_data[0] == '}')) {
+  if (length > 2 && (p_data[0] == '>'  || p_data[0] == '<'  || p_data[0] == '|')) {
 #define MAX_RESPONSE 32
     uint8_t resp[MAX_RESPONSE];
-    int n = prepare_twi_response(resp, MAX_RESPONSE,
+    int n = prepare_twi_response(p_data, length,
+				 resp, MAX_RESPONSE,
 				 twi_tx, twi_rx);
+    ble_nus_string_send(p_nus, resp, n);
   } else {
     app_uart_put(p_data[0]);
     uint8_t lengthble = 13;
