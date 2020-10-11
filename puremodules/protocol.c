@@ -74,64 +74,64 @@ int prepare_twi_response(uint8_t *ibuf, uint32_t in,
   uint32_t addr, n, m, r;
   uint32_t i;
 
-switch (ibuf[0]) {
- case '>':
-   if (in < 5)
-     return send_error(0xffff, obuf, on);
-   addr = from_hex(&ibuf[1], 2);
-   n = from_hex(&ibuf[3], 2);
-   if (n > MAXB)
-     return send_error(0xfffd, obuf, on);
-   if (n * 2 + 5 != in)
-     return send_error(0xfffc, obuf, on);
-   for (i = 0; i < n; i++)
-     b[i] = from_hex(&ibuf[5 + i * 2], 2);
-   return send_error(txf(addr, b, n, 0),
-		     obuf, on);
- case '<':
-   if (in != 5)
-     return send_error(0xffff, obuf, on);
-   addr = from_hex(&ibuf[1], 2);
-   n = from_hex(&ibuf[3], 2);
-   if (n > MAXB)
-     return send_error(0xfffd, obuf, on);
-   if (on < 1 + 2 * n)
-     return send_error(0xfffc, obuf, on);
-   r = rxf(addr, b, n);
-   if (r != 0)
-     return send_error(r, obuf, on);
-   obuf[0] = ':';
-   for (i = 0; i < n; i++)
-     to_hex(&obuf[1 + i * 2], b[i], 2);
-   return 1 + 2 * n;
- case '|':
-   if (in < 7)
-     return send_error(0xffff, obuf, on);
-   addr = from_hex(&ibuf[1], 2);
-   n = from_hex(&ibuf[3], 2);
-   m = from_hex(&ibuf[5], 2);
-   if (n > MAXB)
-     return send_error(0xfffd, obuf, on);
-   if (m > MAXB)
-     return send_error(0xfffc, obuf, on);
-   if (on < 1 + 2 * m)
-     return send_error(0xfffb, obuf, on);
-   if (n * 2 + 7 != in)
-     return send_error(0xfffa, obuf, on);
-   for (i = 0; i < n; i++)
-     b[i] = from_hex(&ibuf[7 + i * 2], 2);
-   r = txf(addr, b, n, 1);
-   if (r != 0)
-     return send_error(r, obuf, on);
-   r = rxf(addr, b, m);
-   if (r != 0)
-     return send_error(r, obuf, on);
-   obuf[0] = ':';
-   for (i = 0; i < m; i++)
-     to_hex(&obuf[1 + i * 2], b[i], 2);
-   return 1 + 2 * m;
- default:
-   return send_error(0xff00, obuf, on);
- }
- return send_error(0xff01, obuf, on);
- }
+  switch (ibuf[0]) {
+  case '>':
+    if (in < 5)
+      return send_error(0xffff, obuf, on);
+    addr = from_hex(&ibuf[1], 2);
+    n = from_hex(&ibuf[3], 2);
+    if (n > MAXB)
+      return send_error(0xfffd, obuf, on);
+    if (n * 2 + 5 != in)
+      return send_error(0xfffc, obuf, on);
+    for (i = 0; i < n; i++)
+      b[i] = from_hex(&ibuf[5 + i * 2], 2);
+    return send_error(txf(addr, b, n, 0),
+		      obuf, on);
+  case '<':
+    if (in != 5)
+      return send_error(0xffff, obuf, on);
+    addr = from_hex(&ibuf[1], 2);
+    n = from_hex(&ibuf[3], 2);
+    if (n > MAXB)
+      return send_error(0xfffd, obuf, on);
+    if (on < 1 + 2 * n)
+      return send_error(0xfffc, obuf, on);
+    r = rxf(addr, b, n);
+    if (r != 0)
+      return send_error(r, obuf, on);
+    obuf[0] = ':';
+    for (i = 0; i < n; i++)
+      to_hex(&obuf[1 + i * 2], b[i], 2);
+    return 1 + 2 * n;
+  case '|':
+    if (in < 7)
+      return send_error(0xffff, obuf, on);
+    addr = from_hex(&ibuf[1], 2);
+    n = from_hex(&ibuf[3], 2);
+    m = from_hex(&ibuf[5], 2);
+    if (n > MAXB)
+      return send_error(0xfffd, obuf, on);
+    if (m > MAXB)
+      return send_error(0xfffc, obuf, on);
+    if (on < 1 + 2 * m)
+      return send_error(0xfffb, obuf, on);
+    if (n * 2 + 7 != in)
+      return send_error(0xfffa, obuf, on);
+    for (i = 0; i < n; i++)
+      b[i] = from_hex(&ibuf[7 + i * 2], 2);
+    r = txf(addr, b, n, 1);
+    if (r != 0)
+      return send_error(r, obuf, on);
+    r = rxf(addr, b, m);
+    if (r != 0)
+      return send_error(r, obuf, on);
+    obuf[0] = ':';
+    for (i = 0; i < m; i++)
+      to_hex(&obuf[1 + i * 2], b[i], 2);
+    return 1 + 2 * m;
+  default:
+    return send_error(0xff00, obuf, on);
+  }
+  return send_error(0xff01, obuf, on);
+}
