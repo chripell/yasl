@@ -201,7 +201,7 @@ static uint32_t twi_rx(uint8_t addr,
 static void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t length)
 {
   if (length > 2 && (p_data[0] == '>'  || p_data[0] == '<'  || p_data[0] == '|')) {
-#define MAX_RESPONSE 32
+#define MAX_RESPONSE 40
     uint8_t resp[MAX_RESPONSE];
     int n = prepare_twi_response(p_data, length,
 				 resp, MAX_RESPONSE,
