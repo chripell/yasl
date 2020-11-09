@@ -6,19 +6,59 @@ from dbus_next.aio import MessageBus
 NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
 NUS_CHARACTERISTIC_TX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'
 NUS_CHARACTERISTIC_RX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'
+RFDUINO_UUID = '00001801-0000-1000-8000-00805f9b34fb'
+RFDUINO_TX = '00002222-0000-1000-8000-00805f9b34fb'
+RFDUINO_RX = '00002221-0000-1000-8000-00805f9b34fb'
 
 
-class NUS:
+class Base:
 
     def __init__(self):
+        self.dev = None
+        self.tx = None
+        self.rx = None
         self.bus = None
         self.root_obj = None
         self.object_manager = None
         self.all = None
         self.prefix = None
+        self.service_uuid = None
         self.data = deque()
         self.data_lock = asyncio.Lock()
         self.data_cond = asyncio.Condition(lock=self.data_lock)
+
+    async def write(self, data: bytes):
+        await self.tx.call_write_value(data, {})
+
+    async def is_connected(self) -> bool:
+        return await self.dev.get_connected()
+
+    async def connect(self):
+        await self.dev.call_connect()
+
+    async def disconnect(self):
+        await self.dev.call_disconnect()
+
+    async def read(self) -> bytes:
+        async with self.data_cond:
+            await self.data_cond.wait_for(self._has_data)
+            return self.data.popleft()
+
+    def _has_data(self) -> bool:
+        return len(self.data) > 0
+
+    async def has_data(self) -> bool:
+        async with self.data_lock:
+            return self._has_data()
+
+    async def _new_data(self, data):
+        async with self.data_lock:
+            self.data.append(data)
+            self.data_cond.notify_all()
+
+    async def flush(self):
+        async with self.data_lock:
+            self.data.clear()
 
     async def find(self, mac: str = '', name: str = '') -> bool:
         self.bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
@@ -34,7 +74,7 @@ class NUS:
                 dev = v['org.bluez.Device1']
                 if 'UUIDs' not in dev:
                     continue
-                if NUS_SERVICE_UUID not in dev['UUIDs'].value:
+                if self.service_uuid not in dev['UUIDs'].value:
                     continue
                 if 'Address' not in dev:
                     continue
@@ -69,9 +109,9 @@ class NUS:
                 if 'UUID' not in val:
                     continue
                 car_uuid = val['UUID'].value
-                if NUS_CHARACTERISTIC_RX == car_uuid:
+                if self.rx_uuid == car_uuid:
                     rx = k
-                if NUS_CHARACTERISTIC_TX == car_uuid:
+                if self.tx_uuid == car_uuid:
                     tx = k
         if tx is None or rx is None:
             return False
@@ -94,38 +134,23 @@ class NUS:
         await self.rx.call_start_notify()
         return True
 
-    async def write(self, data: bytes):
-        await self.tx.call_write_value(data, {})
 
-    async def read(self) -> bytes:
-        async with self.data_cond:
-            await self.data_cond.wait_for(self._has_data)
-            return self.data.popleft()
+class NUS(Base):
 
-    def _has_data(self) -> bool:
-        return len(self.data) > 0
+    def __init__(self):
+        super().__init__()
+        self.service_uuid = NUS_SERVICE_UUID
+        self.rx_uuid = NUS_CHARACTERISTIC_RX
+        self.tx_uuid = NUS_CHARACTERISTIC_TX
 
-    async def has_data(self) -> bool:
-        async with self.data_lock:
-            return self._has_data()
 
-    async def _new_data(self, data):
-        async with self.data_lock:
-            self.data.append(data)
-            self.data_cond.notify_all()
+class RFDuino(Base):
 
-    async def flush(self):
-        async with self.data_lock:
-            self.data.clear()
-
-    async def is_connected(self) -> bool:
-        return await self.dev.get_connected()
-
-    async def connect(self):
-        await self.dev.call_connect()
-
-    async def disconnect(self):
-        await self.dev.call_disconnect()
+    def __init__(self):
+        super().__init__()
+        self.service_uuid = RFDUINO_UUID
+        self.rx_uuid = RFDUINO_RX
+        self.tx_uuid = RFDUINO_TX
 
 
 class I2C:

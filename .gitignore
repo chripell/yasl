@@ -53,3 +53,8 @@ dkms.conf
 
 # Emacs
 *~
+compile_commands.json
+
+# Misc
+.ccls-cache/
+python/out.csv
