@@ -194,3 +194,10 @@ class I2C:
             addr, n, reg))
         resp = await self.nus.read()
         return self._check_response(resp)
+
+    async def write_i2c_block_data(self, addr, reg, data):
+        await self.nus.write(
+            b'>%02x%02x%02x' % (addr, len(data) + 1, reg) +
+            b''.join([b'%02x' % i for i in data]))
+        resp = await self.nus.read()
+        self._check_response(resp)
