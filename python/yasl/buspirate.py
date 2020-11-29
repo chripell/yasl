@@ -53,3 +53,17 @@ class I2C:
 
     def set_fast(self, fast: int):
         lib.i2c_fast(self.b, fast)
+
+    async def read_i2c_block_data(self, addr, register, n):
+        data = (ctypes.c_ubyte * n)()
+        lib.i2c_cmd_recv(self.b, addr, register, data, n)
+        return bytes(data)
+
+    async def read_byte_data(self, addr, register):
+        return await self.read_i2c_block_data(addr, register, 1)
+
+    async def read_word_data(self, addr, register):
+        return await self.read_i2c_block_data(addr, register, 2)
+
+    async def write_i2c_block_data(self, addr, register, data):
+        self.send(addr, [register] + data)
