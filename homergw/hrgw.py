@@ -4,6 +4,7 @@ import abc
 import argparse
 import datetime
 import julian
+import time
 
 
 class Data(typing.NamedTuple):
@@ -26,11 +27,11 @@ class Producer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def start(self, args, coll: Collector):
+    async def start(self, args, coll: Collector):
         pass
 
     @abc.abstractmethod
-    def stop(self):
+    async def stop(self):
         pass
 
 
@@ -41,15 +42,15 @@ class Consumer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def start(self, args):
+    async def start(self, args):
         pass
 
     @abc.abstractmethod
-    def push(self, p: Data):
+    async def push(self, p: Data):
         pass
 
     @abc.abstractmethod
-    def stop(self):
+    async def stop(self):
         pass
 
 
@@ -71,42 +72,32 @@ class Hub(Collector):
         for i in self.producers:
             i.register_args(arg)
 
-    def start(self, args):
+    async def start(self, args):
+        tasks = []
         for i in self.consumers:
-            i.start(args)
+            tasks.append(i.start(args))
         for i in self.producers:
-            i.start(args, self)
+            tasks.append(i.start(args, self))
+        await asyncio.gather(*tasks)
 
-    def stop(self):
+    async def stop(self):
         for i in self.consumers:
-            i.stop()
+            await i.stop()
         for i in self.producers:
-            i.stop()
+            await i.stop()
 
-    def push(self, name: str, data: float):
+    async def push(self, name: str, data: float):
         p = Data(julian.to_jd(datetime.datetime.now()),
                  name, data)
         for i in self.consumers:
-            i.push(p)
+            await i.push(p)
 
-class RunnerMixin():
 
-    NAME="unknown"
+class SleeperMixin:
 
-    def run_task(self, every: float):
-        loop = asyncio.get_event_loop()
-        self.__every = every
-        self.__task = loop.create_task(self.__run())
+    running = False
 
-    async def __run(self):
-        active = True
-        while active:
-            try:
-                await asyncio.sleep(self.__every)
-                active = await self._action()
-            except Exception as e:
-                print(f"Task '{self.NAME}' died: {e}")
-                active = False
-
-    def cancel_task(self):
-        self.__task.cancel()
+    async def sleep(self, secs: float):
+        start = time.time()
+        while self.running and time.time() < start + secs:
+            await asyncio.sleep(1)

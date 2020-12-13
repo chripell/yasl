@@ -5,11 +5,12 @@ import hrgw
 import argparse
 import signal
 import importlib
+import os
+
 
 def handler(sig):
     print(f"Got signal: {sig!s}, shutting down.")
-    hub.stop()
-    loop.stop()
+    loop.create_task(hub.stop())
     loop.remove_signal_handler(signal.SIGTERM)
     loop.add_signal_handler(signal.SIGINT, lambda: None)
 
@@ -37,11 +38,12 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, handler, sig)
-    hub.start(args)
-    loop.run_forever()
+    loop.run_until_complete(hub.start(args))
     tasks = asyncio.all_tasks(loop=loop)
     for t in tasks:
         t.cancel()
     group = asyncio.gather(*tasks, return_exceptions=True)
     loop.run_until_complete(group)
     loop.close()
+    # This is a fix for a strange threading lock. Need to go deeper.
+    os._exit(0)
