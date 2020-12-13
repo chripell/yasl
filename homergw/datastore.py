@@ -34,12 +34,16 @@ data REAL);""")
             self.data.append(p)
 
     async def stop(self):
-        await self.flush()
-        self.running = False
+        await self.flush(close=True)
 
-    async def flush(self):
+    async def flush(self, close=False):
         async with self.lock:
+            if not self.running:
+                return
             await self.db.executemany(
                 "INSERT INTO samples VALUES (?, ?, ?)", self.data)
             await self.db.commit()
             self.data = []
+            if close:
+                self.running = False
+                await self.db.close()

@@ -45,5 +45,3 @@ if __name__ == "__main__":
     group = asyncio.gather(*tasks, return_exceptions=True)
     loop.run_until_complete(group)
     loop.close()
-    # This is a fix for a strange threading lock. Need to go deeper.
-    os._exit(0)
