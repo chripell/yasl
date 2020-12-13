@@ -40,7 +40,6 @@ data REAL);""")
     async def flush(self):
         async with self.lock:
             await self.db.executemany(
-                "INSERT INTO samples VALUES (?, ?, ?)",
-                (tuple(i) for i in self.data))
+                "INSERT INTO samples VALUES (?, ?, ?)", self.data)
             await self.db.commit()
             self.data = []
