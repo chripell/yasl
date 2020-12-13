@@ -100,4 +100,4 @@ class SleeperMixin:
     async def sleep(self, secs: float):
         start = time.time()
         while self.running and time.time() < start + secs:
-            await asyncio.sleep(1)
+            await asyncio.sleep(max(1, secs))
