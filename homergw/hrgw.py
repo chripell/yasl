@@ -98,6 +98,7 @@ class SleeperMixin:
     running = False
 
     async def sleep(self, secs: float):
-        start = time.time()
-        while self.running and time.time() < start + secs:
-            await asyncio.sleep(max(1, secs))
+        while secs > 0.001 and self.running:
+            sl = max(secs, 1.0)
+            await asyncio.sleep(sl)
+            secs =- sl
