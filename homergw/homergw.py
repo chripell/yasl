@@ -5,7 +5,6 @@ import hrgw
 import argparse
 import signal
 import importlib
-import os
 
 
 def handler(sig):
@@ -15,7 +14,7 @@ def handler(sig):
     loop.add_signal_handler(signal.SIGINT, lambda: None)
 
 
-def register(mod: str, consumer:bool =False):
+def register(mod: str, consumer: bool =False):
     try:
         m = importlib.import_module(mod)
         if consumer:
@@ -31,7 +30,7 @@ if __name__ == "__main__":
     hub = hrgw.Hub()
     # Registration of consumers/producers:
     register("datastore", consumer=True)
-    register("sensor52")
+    register("pinger")
     # Registration finished.
     hub.register_args(parser)
     args = parser.parse_args()
