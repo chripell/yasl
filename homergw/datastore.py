@@ -3,6 +3,7 @@ import hrgw
 import argparse
 import aiosqlite
 
+
 class Impl(hrgw.Collector, hrgw.SleeperMixin):
 
     NAME = "Sqlite Datastore"
@@ -29,7 +30,7 @@ data REAL);""")
             await self.sleep(args.data_store_flush_time)
             await self.flush()
 
-    async def push(self, p:hrgw.Data):
+    async def push(self, p: hrgw.Data):
         async with self.lock:
             self.data.append(p)
 

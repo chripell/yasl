@@ -3,8 +3,7 @@ import typing
 import abc
 import argparse
 import datetime
-import julian
-import time
+import julian  # type: ignore
 
 
 class Data(typing.NamedTuple):
@@ -57,8 +56,8 @@ class Consumer(abc.ABC):
 class Hub(Collector):
 
     def __init__(self):
-        self.consumers: List[Consumers] = []
-        self.producers: List[Producers] = []
+        self.consumers: typing.List[Consumer] = []
+        self.producers: typing.List[Producer] = []
 
     def register_consumer(self, c: Consumer):
         self.consumers.append(c)
@@ -69,8 +68,8 @@ class Hub(Collector):
     def register_args(self, arg: argparse.ArgumentParser):
         for i in self.consumers:
             i.register_args(arg)
-        for i in self.producers:
-            i.register_args(arg)
+        for j in self.producers:
+            j.register_args(arg)
 
     async def start(self, args):
         tasks = []
@@ -86,9 +85,10 @@ class Hub(Collector):
         for i in self.producers:
             await i.stop()
 
-    async def push(self, name: str, data: float):
-        p = Data(julian.to_jd(datetime.datetime.now()),
-                 name, data)
+    async def push(self, name: str, data: float, now: float = -1):
+        if now < 0.0:
+            now = julian.to_jd(datetime.datetime.now())
+        p = Data(now, name, data)
         for i in self.consumers:
             await i.push(p)
 
@@ -101,4 +101,4 @@ class SleeperMixin:
         while secs > 0.001 and self.running:
             sl = max(secs, 1.0)
             await asyncio.sleep(sl)
-            secs =- sl
+            secs = secs - sl

@@ -54,4 +54,7 @@ class Impl(hrgw.Producer):
     async def stop(self):
         self.running = False
         if self.proc:
-            self.proc.terminate()
+            try:
+                self.proc.terminate()
+            except ProcessLookupError:
+                pass
