@@ -30,6 +30,7 @@ if __name__ == "__main__":
     hub = hrgw.Hub()
     # Registration of consumers/producers:
     register("datastore", consumer=True)
+    register("disphat", consumer=True)
     register("pinger")
     register("sensor52")
     # Registration finished.
