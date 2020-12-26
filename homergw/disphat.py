@@ -1,5 +1,7 @@
+import asyncio
 import dothat.backlight as backlight
 import dothat.lcd as lcd
+import dothat.touch as touch
 import hrgw
 import argparse
 import typing
@@ -12,6 +14,8 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         self.monitored: typing.Dict[str, float] = {}
         self.name: typing.Dict[str, str] = {}
         self.running = True
+        touch.bind_defaults(self)
+        self.loop = None
 
     def register_args(self, arg: argparse.ArgumentParser):
         arg.add_argument("--disphat-values", type=str, default="",
@@ -26,6 +30,7 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
                          help="Contrast of the LCD.")
 
     async def start(self, args):
+        self.loop = asyncio.get_running_loop()
         if args.disphat_values == "":
             ra = ["Void:V", "Void1:V1", "Void2:V2"]
         else:
@@ -40,10 +45,10 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
             ral = [i.strip() for i in args.disphat_alerts.split(",")]
         alert_vars = {'V': self.monitored}
         alerts = [lambda: eval(i, alert_vars) for i in ral]
-        cur = 0
+        self.cur = 0
         lcd.set_contrast(args.disphat_contrast)
         backlight.sweep(args.disphat_hue / 360.0, 0)
-        refresh = time.time() + args.disphat_showtime
+        self.refresh = time.time() + args.disphat_showtime
         alert_led = 0
         while self.running:
             await self.sleep(0.1)
@@ -53,16 +58,14 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
                 backlight.set_graph(0)
             alert_led += 1
             alert_led = alert_led % 25
-            if time.time() < refresh:
-                continue
-            refresh = time.time() + args.disphat_showtime
-            nxt = (cur + 1) % n
+            nxt = (self.cur + 1) % n
             lcd.clear()
-            self.show(0, a[cur])
+            self.show(0, a[self.cur])
             self.show(1, a[nxt])
             self.show(2, a[(nxt + 1) % n])
-            if len(a) > 3:
-                cur = nxt
+            if time.time() > self.refresh and len(a) > 3:
+                self.cur = nxt
+                self.refresh = time.time() + args.disphat_showtime
 
     def show(self, row: int, k: str):
         lcd.set_cursor_position(0, row)
@@ -75,3 +78,35 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
 
     async def stop(self):
         self.running = False
+
+    async def do_up(self):
+        self.cur -= 1
+        if self.cur < 0:
+            self.cur = len(self.monitored) - 1
+
+    def up(self):
+        if self.loop is None:
+            return
+        asyncio.run_coroutine_threadsafe(self.do_up(), self.loop)
+
+    async def do_down(self):
+        self.cur += 1
+        if self.cur >= len(self.monitored):
+            self.cur = 0
+
+    def down(self):
+        if self.loop is None:
+            return
+        asyncio.run_coroutine_threadsafe(self.do_down(), self.loop)
+
+    def left(self):
+        pass
+
+    def right(self):
+        pass
+
+    def select(self):
+        pass
+
+    def cancel(self):
+        pass
