@@ -17,6 +17,7 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         self.running = True
         touch.bind_defaults(self)
         self.loop = None
+        self.looping = True
 
     def register_args(self, arg: argparse.ArgumentParser):
         arg.add_argument("--disphat-values", type=str, default="",
@@ -65,7 +66,7 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
             self.show(0, a[self.cur])
             self.show(1, a[nxt])
             self.show(2, a[(nxt + 1) % self.n])
-            if time.time() > self.refresh and len(a) > 3:
+            if time.time() > self.refresh and len(a) > 3 and self.looping:
                 self.cur = nxt
                 self.refresh = time.time() + self.showtime
 
@@ -112,5 +113,10 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
     def select(self):
         pass
 
+    async def do_cancel(self):
+        self.looping = not self.looping
+
     def cancel(self):
-        pass
+        if self.loop is None:
+            return
+        asyncio.run_coroutine_threadsafe(self.do_cancel(), self.loop)
