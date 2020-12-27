@@ -73,7 +73,7 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         lcd.set_cursor_position(0, row)
         n = self.name[k]
         d = self.monitored[k]
-        lcd.write(f"{n} {d}")
+        lcd.write(f"{n} {d:.2f}")
 
     async def push(self, p: hrgw.Data):
         self.monitored[p.name] = p.data
