@@ -22,17 +22,18 @@ class Impl(hrgw.Producer, hrgw.SleeperMixin):
                                "[topic]:[field]:[db name]]."))
 
     async def start(self, args, coll: hrgw.Collector):
-        if args.getmqtt_topics != "":
-            topics = [t.strip() for t in args.getmqtt_topics.split(",")]
-            for t, f, d in [t.split(":") for t in topics]:
-                self.topics[t].append((f, d))
-            async with asyncio_mqtt.Client(args.getmqtt_server) as client:
-                async with client.filtered_messages(
-                        args.getmqtt_filter) as messages:
-                    for t in self.topics.keys():
-                        await client.subscribe(t)
-                    async for msg in messages:
-                        await self.process_msg(msg, coll)
+        if args.getmqtt_topics == "":
+            return
+        topics = [t.strip() for t in args.getmqtt_topics.split(",")]
+        for t, f, d in [t.split(":") for t in topics]:
+            self.topics[t].append((f, d))
+        async with asyncio_mqtt.Client(args.getmqtt_server) as client:
+            async with client.filtered_messages(
+                    args.getmqtt_filter) as messages:
+                for t in self.topics.keys():
+                    await client.subscribe(t)
+                async for msg in messages:
+                    await self.process_msg(msg, coll)
 
     async def process_msg(self, msg, coll):
         if msg.topic not in self.topics:
