@@ -13,6 +13,7 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
     def __init__(self):
         self.monitored: typing.Dict[str, float] = {}
         self.name: typing.Dict[str, str] = {}
+        self.n = 0
         self.running = True
         touch.bind_defaults(self)
         self.loop = None
@@ -35,7 +36,7 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
             ra = ["Void:V", "Void1:V1", "Void2:V2"]
         else:
             ra = [i.strip() for i in args.disphat_values.split(",")]
-        n = len(ra)
+        self.n = len(ra)
         self.name = {k: v for (k, v) in (i.split(":") for i in ra)}
         a = [v for (v, _) in (i.split(":") for i in ra)]
         self.monitored = {k: 0.0 for k in a}
@@ -48,7 +49,8 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         self.cur = 0
         lcd.set_contrast(args.disphat_contrast)
         backlight.sweep(args.disphat_hue / 360.0, 0)
-        self.refresh = time.time() + args.disphat_showtime
+        self.showtime = args.disphat_showtime
+        self.refresh = time.time() + self.showtime
         alert_led = 0
         while self.running:
             await self.sleep(0.1)
@@ -58,14 +60,14 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
                 backlight.set_graph(0)
             alert_led += 1
             alert_led = alert_led % 25
-            nxt = (self.cur + 1) % n
+            nxt = (self.cur + 1) % self.n
             lcd.clear()
             self.show(0, a[self.cur])
             self.show(1, a[nxt])
-            self.show(2, a[(nxt + 1) % n])
+            self.show(2, a[(nxt + 1) % self.n])
             if time.time() > self.refresh and len(a) > 3:
                 self.cur = nxt
-                self.refresh = time.time() + args.disphat_showtime
+                self.refresh = time.time() + self.showtime
 
     def show(self, row: int, k: str):
         lcd.set_cursor_position(0, row)
@@ -80,9 +82,10 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         self.running = False
 
     async def do_up(self):
+        self.refresh = time.time() + self.showtime
         self.cur -= 1
         if self.cur < 0:
-            self.cur = len(self.monitored) - 1
+            self.cur = self.n - 1
 
     def up(self):
         if self.loop is None:
@@ -90,8 +93,9 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         asyncio.run_coroutine_threadsafe(self.do_up(), self.loop)
 
     async def do_down(self):
+        self.refresh = time.time() + self.showtime
         self.cur += 1
-        if self.cur >= len(self.monitored):
+        if self.cur >= self.n:
             self.cur = 0
 
     def down(self):
