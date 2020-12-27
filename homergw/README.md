@@ -17,7 +17,8 @@ Dependencies:
 
 ## disphat
 
-Consumer, shows information on the Pimoroni Disphat. Parameters:
+Consumer, shows information on the Pimoroni Disphat. You can use the
+left buttons to scroll and enable/disabling auto-scrolling.Parameters:
 
 * `--disphat-values='T3_52pi:T,PL_8.8.8.8:Lat,P%_8.8.8.8:Loss'`
 * `--disphat-contrast` 
@@ -65,3 +66,31 @@ Parameters:
 
 * `--sensor52-refresh-time`
 
+## getmqtt
+
+Producer. Gets data from a mqtt broker. The data produced is defined
+by the user with the `--getmqtt-topics` option.
+
+Dependencies:
+
+* `pip install asyncio-mqtt`
+
+Parameters:
+
+* `--getmqtt-server`
+* `--getmqtt-filter`
+* `--getmqtt-topics`
+
+## bwe
+
+Producer, gets the bandwidth and the packet/s on network interfaces:
+
+* `RXB_[interface]`
+* `TXB_[interface]`
+* `RXP_[interface]`
+* `TXP_[interface]`
+
+Parameters:
+
+* `--bwe-refresh-time`
+* `--bwe-ifaces`
