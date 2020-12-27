@@ -3,6 +3,7 @@ import typing
 import abc
 import argparse
 import datetime
+import contextlib
 import julian  # type: ignore
 
 
@@ -29,9 +30,8 @@ class Producer(abc.ABC):
     async def start(self, args, coll: Collector):
         pass
 
-    @abc.abstractmethod
-    async def stop(self):
-        pass
+    async def stop(self) -> bool:
+        return True
 
 
 class Consumer(abc.ABC):
@@ -72,18 +72,22 @@ class Hub(Collector):
             j.register_args(arg)
 
     async def start(self, args):
-        tasks = []
+        self.consumer_tasks = []
+        self.producer_tasks = []
         for i in self.consumers:
-            tasks.append(i.start(args))
+            t = i.start(args)
+            self.consumer_tasks.append(t)
         for i in self.producers:
-            tasks.append(i.start(args, self))
-        await asyncio.gather(*tasks)
+            self.producer_tasks.append(
+                asyncio.create_task(run_consumer(i, args, self)))
+        await asyncio.gather(*self.producer_tasks, *self.consumer_tasks)
 
     async def stop(self):
         for i in self.consumers:
             await i.stop()
-        for i in self.producers:
-            await i.stop()
+        for i, t in zip(self.producers, self.producer_tasks):
+            if await i.stop():
+                t.cancel()
 
     async def push(self, name: str, data: float, now: float = -1):
         if now < 0.0:
@@ -91,6 +95,11 @@ class Hub(Collector):
         p = Data(now, name, data)
         for i in self.consumers:
             await i.push(p)
+
+
+async def run_consumer(cons, args, coll):
+    with contextlib.suppress(asyncio.exceptions.CancelledError):
+        await cons.start(args, coll)
 
 
 class SleeperMixin:
