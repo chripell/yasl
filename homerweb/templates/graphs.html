@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Homer Web graphs</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="{{ url_for("static", filename="graphs.css") }}">
+  <link rel="stylesheet" href="{{ url_for("static", filename="daterangepicker.css") }}">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+  <script src="{{ url_for("static", filename="jquery.daterangepicker.min.js") }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="{{ url_for("static", filename="graphs.js") }}"></script>
+  <script type=text/javascript>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+  </script>
+</head>
+<body>
+
+<form action="#" id="topbar" onsubmit="return false;">
+
+  <div id="graphd">
+    <label for="graph">Select a graph:</label>
+    <select name="graph" id="graph">
+      {% for c in cfg %}
+      <option>{{ c["name"] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div id="datesd">
+    <label for="dates">Select dates:</label>
+    <input id="dates" size="30" value="">
+  </div>
+  <div id="maxpointsd">
+    <label for="maxpoints">Max points:</label>
+    <input id="maxpoints" size="10" value="1000">
+  </div>
+  <button id="button">Draw!</button>
+  <div id="status"></div>
+</form>
+<div id="chart"></div>
+
+</body>
+</html>

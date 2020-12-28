@@ -1,0 +1,18 @@
+fieldset {
+    border: 0;
+}
+#graphd, #datesd, #maxpointsd, #button, #status
+{
+    display: inline;
+}
+#graph
+{
+    width: 180px;
+}
+#chart {
+  max-width: 1200px;
+  margin: 35px auto;
+}
+#status {
+  color: red;
+}
