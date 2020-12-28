@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 ROOT = "/homer"
-DATABASE = "/tmp/DELME.db"
+DATABASE = "/mnt/d/home.db"
 CONFIG = [
     {
         "name": "Internet throughput",
