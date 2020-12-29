@@ -1,7 +1,7 @@
-from flask import Flask, g, Blueprint, render_template, request, jsonify
+from flask import (Flask, g, Blueprint, render_template, request,
+                   jsonify, escape)
 import sqlite3
-from scipy.interpolate import interp1d
-import numpy as np
+import pandas as pd
 import time
 
 ROOT = "/homer"
@@ -40,17 +40,6 @@ def query_db(query, args=(), one=False):
     return (rv[0] if rv else None) if one else rv
 
 
-def resample(data, maxpoints=1000):
-    if len(data) <= maxpoints:
-        return data
-    uz = list(zip(*data))
-    F = interp1d(uz[0], uz[1], fill_value='extrapolate')
-    T = np.linspace(data[0][0], data[-1][0], maxpoints)
-    D = F(T)
-    ndata = list(zip(T.tolist(), D.tolist()))
-    return ndata
-
-
 @bp.route("/graphs")
 def graphs():
     return render_template('graphs.html', cfg=CONFIG)
@@ -58,7 +47,7 @@ def graphs():
 
 @bp.route("/get_data")
 def get_data():
-    name = request.args.get("name", "", type=str)
+    name = escape(request.args.get("name", "", type=str))
     start = request.args.get("start", int(time.time()) - 86400, type=int)
     finish = request.args.get("finish", int(time.time()), type=int)
     maxpoints = request.args.get("maxpoints", 1000, type=int)
@@ -68,15 +57,26 @@ def get_data():
             conf = c
             break
     if conf is None:
-        return jsonify(result={"error": "Invalid name"})
+        return jsonify(result={"error": "Name not found"})
     series = []
     for v, l in zip(conf["vars"], conf["labels"]):
-        data = query_db(
-            r"select cast(strftime('%s', jd) as float) * 1000, data from samples where name = ? and jd > julianday(?, 'unixepoch') and jd < julianday(?, 'unixepoch') order by jd limit 100000",
-            (v, start, finish))
+        df = pd.read_sql_query(
+            "select strftime('%s', jd) as ts, data " +
+            f"from samples where name='{v}' and " +
+            f"jd > julianday({start}, 'unixepoch') and " +
+            f"jd < julianday({finish}, 'unixepoch') " +
+            "order by jd limit 100000",
+            get_db(), parse_dates={"ts": "s"}, index_col="ts")
+        n = len(df)
+        if n > maxpoints:
+            dt = df.index[-1] - df.index[0]
+            df = df.resample(dt / (maxpoints-1), origin="start").mean().ffill()
+        ts = df.index.astype(int)/1000000
+        data = zip(ts.to_list(), df["data"].to_list())
         series.append({
-            "data": resample(data, maxpoints),
+            "data": list(data),
             "name": l,
+            "num": n,
         })
     return jsonify(result={
         "name": name,

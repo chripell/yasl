@@ -15,6 +15,10 @@ function formatDate(d) {
 var chart = null;
 
 function render(data) {
+    if (data.result.hasOwnProperty('error')) {
+	$('#status').html(data.result.error);
+	return;
+    }
     $('#status').html('Drawing');
     if (chart == null) {
 	var options = {
@@ -74,7 +78,11 @@ function render(data) {
 	chart.updateSeries(data.result.series);
     }
     chart.render().then(function() {
-	$('#status').html('');
+	let o = "DPs";
+	for (const i of data.result.series) {
+	    o = o + " " + i.num;
+	}
+	$('#status').html(o);
     });
  }
 
