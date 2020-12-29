@@ -47,7 +47,6 @@ def resample(data, maxpoints=1000):
     F = interp1d(uz[0], uz[1], fill_value='extrapolate')
     T = np.linspace(data[0][0], data[-1][0], maxpoints)
     D = F(T)
-    T *= 1000
     ndata = list(zip(T.tolist(), D.tolist()))
     return ndata
 
@@ -73,7 +72,7 @@ def get_data():
     series = []
     for v, l in zip(conf["vars"], conf["labels"]):
         data = query_db(
-            r"select cast(strftime('%s', jd) as decimal), data from samples where name = ? and jd > julianday(?, 'unixepoch') and jd < julianday(?, 'unixepoch') order by jd limit 100000",
+            r"select cast(strftime('%s', jd) as float) * 1000, data from samples where name = ? and jd > julianday(?, 'unixepoch') and jd < julianday(?, 'unixepoch') order by jd limit 100000",
             (v, start, finish))
         series.append({
             "data": resample(data, maxpoints),
