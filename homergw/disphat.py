@@ -18,6 +18,7 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         touch.bind_defaults(self)
         self.loop = None
         self.looping = True
+        self.mode = 0
 
     def register_args(self, arg: argparse.ArgumentParser):
         arg.add_argument("--disphat-values", type=str, default="",
@@ -49,11 +50,18 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         alerts = [lambda: eval(i, alert_vars) for i in ral]
         self.cur = 0
         lcd.set_contrast(args.disphat_contrast)
-        backlight.sweep(args.disphat_hue / 360.0, 0)
         self.showtime = args.disphat_showtime
         self.refresh = time.time() + self.showtime
         alert_led = 0
+        x = 0
         while self.running:
+            if self.mode == 0:
+                backlight.sweep(args.disphat_hue / 360.0, 0)
+            elif self.mode == 1:
+                backlight.sweep(x / 360.0)
+                x = (x + 1) % 360
+            else:
+                backlight.off()
             await self.sleep(0.1)
             if any(a() for a in alerts):
                 backlight.set_graph(alert_led / 20.0)
@@ -111,7 +119,7 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         pass
 
     def select(self):
-        pass
+        self.mode = (self.mode + 1) % 3
 
     async def do_cancel(self):
         self.looping = not self.looping
