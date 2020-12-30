@@ -11,7 +11,25 @@ CONFIG = [
         "name": "Internet throughput",
         "vars": ["RXB_enp1s0u1", "TXB_enp1s0u1"],
         "labels": ["RX MB/s", "TX MB/s"],
-        "yaxis": "MB/s"
+        "yaxis": "MB/s",
+    },
+    {
+        "name": "Temperatures",
+        "vars": ["T1_52pi", "T2_52pi", "T_3d"],
+        "labels": ["Pi", "Ext Pi", "3D printer"],
+        "yaxis": "° C",
+    },
+    {
+        "name": "Humidity",
+        "vars": ["HU_52pi", "HU_3d"],
+        "labels": ["Pi", "3D printer"],
+        "yaxis": "%",
+    },
+    {
+        "name": "Ping 8.8.8.8 latency",
+        "vars": ["PL_8.8.8.8"],
+        "labels": ["ping 8.8.8.8"],
+        "yaxis": "ms",
     },
 ]
 
