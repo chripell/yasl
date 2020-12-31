@@ -7,7 +7,7 @@ import re
 class Impl(hrgw.Producer):
 
     NAME = "Pinger"
-    MATCH_LOSS = re.compile(r"(\d+)% packet loss", re.MULTILINE)
+    MATCH_LOSS = re.compile(r"([\d.]+)% packet loss", re.MULTILINE)
     MATCH_LAT = re.compile(
         r"rtt min/avg/max/mdev = ([\d.]+)/([\d.]+)/([\d.]+)/([\d.]+) ms",
         re.MULTILINE)
