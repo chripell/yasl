@@ -46,7 +46,7 @@ class Impl(hrgw.Producer):
             t = stdout.decode(encoding="utf8", errors="ignore")
             m = self.MATCH_LOSS.search(t)
             if m is not None:
-                await coll.push(f"P%_{ip}", int(m.group(1)))
+                await coll.push(f"P%_{ip}", float(m.group(1)))
             m = self.MATCH_LAT.search(t)
             if m is not None:
                 await coll.push(f"PL_{ip}", float(m.group(2)))
