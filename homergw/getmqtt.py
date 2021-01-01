@@ -8,6 +8,8 @@ import asyncio_mqtt
 
 class Impl(hrgw.Producer, hrgw.SleeperMixin):
 
+    NAME = "Mqtt"
+
     def __init__(self):
         self.topics: typing.Dict[
             str, typing.List] = collections.defaultdict(list)
