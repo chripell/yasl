@@ -10,6 +10,8 @@ import time
 
 class Impl(hrgw.Collector, hrgw.SleeperMixin):
 
+    NAME = "Disphat"
+
     def __init__(self):
         self.monitored: typing.Dict[str, float] = {}
         self.name: typing.Dict[str, str] = {}
