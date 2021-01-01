@@ -4,6 +4,8 @@ import abc
 import argparse
 import datetime
 import contextlib
+import traceback
+import os
 import julian  # type: ignore
 
 
@@ -75,16 +77,29 @@ class Hub(Collector):
         self.consumer_tasks = []
         self.producer_tasks = []
         for i in self.consumers:
-            t = i.start(args)
-            self.consumer_tasks.append(t)
+            self.consumer_tasks.append(
+                asyncio.create_task(run_consumer(i, args), name=i.NAME))
         for i in self.producers:
             self.producer_tasks.append(
-                asyncio.create_task(run_consumer(i, args, self)))
-        await asyncio.gather(*self.producer_tasks, *self.consumer_tasks)
+                asyncio.create_task(run_producer(i, args, self), name=i.NAME))
+        try:
+            await asyncio.gather(*self.producer_tasks, *self.consumer_tasks)
+        except Exception as e:
+            print("Exception:", e)
+            print(traceback.format_exc())
+            try:
+                await self.stop()
+            except Exception as e:
+                print("Stop failed with exception, emergency exit!", e,
+                      flush=True)
+                print(traceback.format_exc(), flush=True)
+                os._exit(1)
+            return
 
     async def stop(self):
-        for i in self.consumers:
-            await i.stop()
+        for i, t in zip(self.consumers, self.consumer_tasks):
+            if await i.stop():
+                t.cancel()
         for i, t in zip(self.producers, self.producer_tasks):
             if await i.stop():
                 t.cancel()
@@ -97,7 +112,12 @@ class Hub(Collector):
             await i.push(p)
 
 
-async def run_consumer(cons, args, coll):
+async def run_consumer(cons, args):
+    with contextlib.suppress(asyncio.exceptions.CancelledError):
+        await cons.start(args)
+
+
+async def run_producer(cons, args, coll):
     with contextlib.suppress(asyncio.exceptions.CancelledError):
         await cons.start(args, coll)
 

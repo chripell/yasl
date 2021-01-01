@@ -35,9 +35,8 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
     async def start(self, args):
         self.loop = asyncio.get_running_loop()
         if args.disphat_values == "":
-            ra = ["Void:V", "Void1:V1", "Void2:V2"]
-        else:
-            ra = [i.strip() for i in args.disphat_values.split(",")]
+            return
+        ra = [i.strip() for i in args.disphat_values.split(",")]
         self.n = len(ra)
         self.name = {k: v for (k, v) in (i.split(":") for i in ra)}
         a = [v for (v, _) in (i.split(":") for i in ra)]

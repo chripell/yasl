@@ -26,6 +26,8 @@ class Impl(hrgw.Producer):
 
     async def start(self, args, coll: hrgw.Collector):
         ip = args.pinger_ip
+        if ip == "":
+            return
         while self.running:
             self.proc = await asyncio.create_subprocess_exec(
                 "ping", "-q",
