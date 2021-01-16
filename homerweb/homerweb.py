@@ -68,12 +68,6 @@ CMDS = [
                 "fields": ["r", "g", "b"],
             },
             {
-                "name": "effect",
-                "desc": ("Effect (blink, breathe, okay, channel_change, " +
-                         "finish_effect, stop_effect)"),
-                "prop": SET,
-            },
-            {
                 "name": "linkquality",
                 "desc": "Link Quality 0-255",
                 "prop": GET,
@@ -186,6 +180,11 @@ def query_db(query, args=(), one=False):
     rv = cur.fetchall()
     cur.close()
     return (rv[0] if rv else None) if one else rv
+
+
+@bp.route("/")
+def main():
+    return render_template('main.html', cfg=CONFIG)
 
 
 @bp.route("/graphs")

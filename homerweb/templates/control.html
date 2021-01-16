@@ -1,24 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="{{ url_for("static", filename="control.css") }}">
   <title>Homer control for {{ name }} </title>
 </head>
 
 <body>
-  <a href="{{ url_for('homer.control') + '?id=' + id }}">Refresh</a>
-  <form action="{{ url_for('homer.control') }}" id="control" method="POST">
+  <a href="{{ url_for('homer.control') + '?id=' + id }}">Refresh {{ name }}</a>
+  <form action="{{ url_for('homer.control') }}" class="control" method="POST">
     <input type="hidden" id="id" name="id" value="{{ id }}">
     {% for c in elements %}
-    <div class="ctrlline">
-      <label for="{{ c["id"] }}">{{ c["label"] }}:</label>
-      <input type="text" id="{{ c["id"] }}" name="{{ c["id"] }}" value="{{ c["val"] }}">
+    <label for="{{ c["id"] }}">
+      {{ c["label"] }}
+    </label>
+    <input type="text" id="{{ c["id"] }}" name="{{ c["id"] }}" value="{{ c["val"] }}">
+    <div class="stale">
       {% if c["stale"] %}
-      <div class="stale">Stale</div>
-      {% endif %}
-      {% if c["submit"] %}
-      <input type="submit" name="action" value="{{ c["id"] }}" />
+      Stale
       {% endif %}
     </div>
+    {% if c["submit"] %}
+    <input type="submit" name="action" value="{{ c["id"] }}" />
+    {% endif %}
     {% endfor %}
   </form>
 </body>
