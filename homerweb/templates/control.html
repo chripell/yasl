@@ -5,8 +5,9 @@
 </head>
 
 <body>
-
-  <form action="{{ url_for('homer.control') }}" id="control">
+  <a href="{{ url_for('homer.control') + '?id=' + id }}">Refresh</a>
+  <form action="{{ url_for('homer.control') }}" id="control" method="POST">
+    <input type="hidden" id="id" name="id" value="{{ id }}">
     {% for c in elements %}
     <div class="ctrlline">
       <label for="{{ c["id"] }}">{{ c["label"] }}:</label>

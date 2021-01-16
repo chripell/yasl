@@ -63,13 +63,7 @@ CMDS = [
             },
             {
                 "name": "color",
-                "desc": "Color XY",
-                "prop": GET + SET,
-                "fields": ["x", "y"],
-            },
-            {
-                "name": "color_rgb",
-                "desc": "Color RGB",
+                "desc": "Color R,G,B",
                 "prop": SET,
                 "fields": ["r", "g", "b"],
             },
@@ -153,6 +147,11 @@ class MQTT:
             return "NONE", 0
         return val
 
+    def set(self, dev, var):
+        payload = json.dumps(var)
+        print("DELME", f"zigbee2mqtt/{dev}/set", payload)
+        self._client.publish(f"zigbee2mqtt/{dev}/set", payload)
+
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -194,18 +193,33 @@ def graphs():
     return render_template('graphs.html', cfg=CONFIG)
 
 
-@bp.route("/control")
+@bp.route("/control", methods=['GET', 'POST'])
 def control():
     mqtt = get_mqtt()
-    now = time.time()
-    mqtt.refresh()
-    ids = [i for i in CMDS if i["id"] == escape(
-        request.args.get("id", "", type=str))]
+    id = escape(request.args.get("id", "", type=str))
+    if id == "":
+        id = request.form["id"]
+    ids = [i for i in CMDS if i["id"] == id]
     if len(ids) == 0:
         abort(404)
         return
-    elements = []
     dev = ids[0]
+    if request.method == "POST":
+        action = request.form["action"]
+        for e in dev["cmds"]:
+            if e["name"] != action:
+                continue
+            new_text = request.form[action]
+            if "fields" in e:
+                new_vals = (i.strip() for i in new_text.split(","))
+                cmd = {k: v for k, v in zip(e["fields"], new_vals)}
+            else:
+                cmd = new_text.strip()
+            mqtt.set(dev["id"], {e["name"]: cmd})
+        time.sleep(1)
+    now = time.time()
+    mqtt.refresh()
+    elements = []
     for e in dev["cmds"]:
         stale = False
         if e["prop"] & GET != 0:
@@ -232,7 +246,7 @@ def control():
             "submit": e["prop"] & SET != 0,
         })
     return render_template('control.html', name=dev["name"],
-                           elements=elements)
+                           id=dev["id"], elements=elements)
 
 
 @bp.route("/get_data")
