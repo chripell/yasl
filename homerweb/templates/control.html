@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Homer control for {{ name }} </title>
+</head>
+
+<body>
+
+  <form action="{{ url_for('homer.control') }}" id="control">
+    {% for c in elements %}
+    <div class="ctrlline">
+      <label for="{{ c["id"] }}">{{ c["label"] }}:</label>
+      <input type="text" id="{{ c["id"] }}" name="{{ c["id"] }}" value="{{ c["val"] }}">
+      {% if c["stale"] %}
+      <div class="stale">Stale</div>
+      {% endif %}
+      {% if c["submit"] %}
+      <input type="submit" name="action" value="{{ c["id"] }}" />
+      {% endif %}
+    </div>
+    {% endfor %}
+  </form>
+</body>
