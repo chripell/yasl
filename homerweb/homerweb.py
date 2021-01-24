@@ -21,21 +21,21 @@ CONFIG = [
     },
     {
         "name": "Temperatures",
-        "vars": ["T1_52pi", "T2_52pi", "T_3d"],
-        "labels": ["Pi", "Ext Pi", "3D printer"],
+        "vars": ["T1_52pi", "T2_52pi", "T_3d", "T_cu", "T_ca"],
+        "labels": ["Pi", "Ext Pi", "3D printer", "Cucina", "Camera"],
         "yaxis": "° C",
     },
     {
         "name": "Humidity",
-        "vars": ["HU_52pi", "HU_3d"],
-        "labels": ["Pi", "3D printer"],
+        "vars": ["HU_3d", "HU_cu", "HU_ca"],
+        "labels": ["3D printer", "Cucina", "Camera"],
         "yaxis": "%",
     },
     {
-        "name": "Ping 8.8.8.8 latency",
-        "vars": ["PL_8.8.8.8"],
-        "labels": ["ping 8.8.8.8"],
-        "yaxis": "ms",
+        "name": "Ping 8.8.8.8",
+        "vars": ["PL_8.8.8.8", "P%_8.8.8.8"],
+        "labels": ["Latency", "Loss"],
+        "yaxis": "ms/%",
     },
 ]
 
