@@ -11,4 +11,5 @@ exec $DIR/homergw.py \
      --getmqtt-topics='zigbee2mqtt/temphum_3d:temperature:T_3d,zigbee2mqtt/temphum_3d:humidity:HU_3d,zigbee2mqtt/temphum_cucina:temperature:T_cu,zigbee2mqtt/temphum_cucina:humidity:HU_cu,zigbee2mqtt/temphum_camera:temperature:T_ca,zigbee2mqtt/temphum_camera:humidity:HU_ca' \
      --bwe-iface=enp1s0u1 \
      --pinger-c=60 \
-     --pinger-w=61
+     --pinger-w=61 \
+     --sb-list=0@70:F1:00:00:0F:7B
