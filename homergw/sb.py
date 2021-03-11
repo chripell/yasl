@@ -1,6 +1,6 @@
 import hrgw
 import argparse
-from dbus_next import BusType
+from dbus_next import BusType, errors
 from dbus_next.aio import MessageBus
 import asyncio
 import struct
@@ -42,7 +42,10 @@ class Impl(hrgw.Producer):
             label, mac = ent.split("@")
             mac = mac.lower()
             self.macs[mac] = label
-            await self.scan(mac)
+            try:
+                await self.scan(mac)
+            except errors.InterfaceNotFoundError as e:
+                print(f"Exception while adding SB {mac}:", e)
 
     async def stop(self):
         self.running = False
