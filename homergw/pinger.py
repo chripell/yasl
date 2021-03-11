@@ -39,7 +39,7 @@ class Impl(hrgw.Producer):
             if not self.running:
                 break
             stdout, stderr = await self.proc.communicate()
-            if self.proc.returncode != 0 and self.running:
+            if self.proc.returncode not in (0, 1) and self.running:
                 print("Pinger execution error: ", self.proc.returncode)
                 continue
             self.proc = None
@@ -52,6 +52,8 @@ class Impl(hrgw.Producer):
             m = self.MATCH_LAT.search(t)
             if m is not None:
                 await coll.push(f"PL_{ip}", float(m.group(2)))
+            else:
+                await coll.push(f"PL_{ip}", 0)
 
     async def stop(self):
         self.running = False
