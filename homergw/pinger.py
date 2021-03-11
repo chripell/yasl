@@ -30,7 +30,7 @@ class Impl(hrgw.Producer):
             return
         while self.running:
             self.proc = await asyncio.create_subprocess_exec(
-                "ping", "-q",
+                "ping", "-n", "-q",
                 "-c", f"{args.pinger_c}",
                 "-w", f"{args.pinger_w}",
                 ip,
