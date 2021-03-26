@@ -21,14 +21,15 @@ CONFIG = [
     },
     {
         "name": "Temperatures",
-        "vars": ["T1_52pi", "T2_52pi", "T_3d", "T_cu", "T_ca"],
-        "labels": ["Pi", "Ext Pi", "3D printer", "Cucina", "Camera"],
+        "vars": ["T1_52pi", "T2_52pi", "T_3d", "T_cu", "T_ca", "SB_T_0"],
+        "labels": ["Pi", "Ext Pi", "3D printer", "Cucina", "Camera",
+                   "Esterno"],
         "yaxis": "° C",
     },
     {
         "name": "Humidity",
-        "vars": ["HU_3d", "HU_cu", "HU_ca"],
-        "labels": ["3D printer", "Cucina", "Camera"],
+        "vars": ["HU_3d", "HU_cu", "HU_ca", "SB_HUM_0"],
+        "labels": ["3D printer", "Cucina", "Camera", "Esterno"],
         "yaxis": "%",
     },
     {
