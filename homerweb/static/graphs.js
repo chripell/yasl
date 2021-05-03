@@ -101,12 +101,13 @@ function draw_graph() {
 	d = new Date(m[2]);
 	finish = d.getTime() / 1000 + 86400;
     }
-    $.getJSON($SCRIPT_ROOT + '/homer/get_data', {
-        start: Math.floor(start),
-        finish: Math.floor(finish),
-	name: $('#graph').val(),
-	maxpoints: $('#maxpoints').val()
-      }, render);
+    $.getJSON($SCRIPT_ROOT + '/homer/get_data/' +
+	$('#graph').val() + '/' +
+        Math.floor(start) + '/' +
+        Math.floor(finish) + '/' +
+	$('#maxpoints').val(), render).fail(function() {
+	    window.location.href = '/homer/graphs';
+	});
 }
 
 $(window).on('load', function() {

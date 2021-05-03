@@ -247,12 +247,8 @@ def control(id):
                            id=dev["id"], elements=elements)
 
 
-@bp.route("/get_data")
-def get_data():
-    name = escape(request.args.get("name", "", type=str))
-    start = request.args.get("start", int(time.time()) - 86400, type=int)
-    finish = request.args.get("finish", int(time.time()), type=int)
-    maxpoints = request.args.get("maxpoints", 1000, type=int)
+@bp.route("/get_data/<name>/<int:start>/<int:finish>/<int:maxpoints>")
+def get_data(name, start, finish, maxpoints):
     conf = None
     for c in CONFIG:
         if c["name"] == name:
