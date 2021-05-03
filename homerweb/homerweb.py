@@ -193,16 +193,14 @@ def graphs():
     return render_template('graphs.html', cfg=CONFIG)
 
 
-@bp.route("/control", methods=['GET', 'POST'])
-def control():
+@bp.route("/control/<id>", methods=['GET', 'POST'])
+def control(id):
     mqtt = get_mqtt()
-    id = escape(request.args.get("id", "", type=str))
-    if id == "":
-        id = request.form["id"]
+    if id is None or len(id) == 0:
+        abort(404)
     ids = [i for i in CMDS if i["id"] == id]
     if len(ids) == 0:
         abort(404)
-        return
     dev = ids[0]
     if request.method == "POST":
         action = request.form["action"]
