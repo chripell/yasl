@@ -24,27 +24,39 @@ full information.
 
 Various Python libraries:
 
-* `yasl/abt.py` asyncio based Bluetooth library for connecting to
-  RFDuino and Puremodules (and other Nordic UARTs).
-  
-* `yasl/as726x` driver for the as726x chips in serial mode and I2C
-  mode. I use exclusively the formet, so the latter is not well
-  tested.
-  
-* `yasl/bt.py` Glib based Bluetooth library for connecting to Nordic
-  UARTs.
-  
-* `yasl/buspirate.py` library for interfacing with the I2C functions
-  of Buspirate.
-  
-* `yasl/tcs34725.py` driver for the TCS34725.
+* `python/test_anus.py`, `python/yasl/abt.py` and
+  `python/yasl/vendored_bme280` interface to a Nordic NUS using
+  dbus/Bluetooth/asyncio. It connects to a Puremodule board and reads
+  the BME280 sensor on it.
 
-* `yasl/vendored_bme280` vendored BME280 driver which uses asyncio.
-  
-* `yasl/vendored_tsl2561` vendored TSL2561 driver which uses asyncio.
+* `python/test_nus.py` and `python/yasl/bt.py` interfaces to a Nordic
+  NUS using dbus/Bluetooth/glib.
+
+* `test_rfduino.py` and `python/yasl/vendored_tsl2561` connect to a
+  remote light sensor on a RFDuino.
+
+* `python/test_as726x.py` and `python/yasl/as726x.py` is a driver for
+  AMS AS726x.
+
+* `test_tcs34725.py`, `python/yasl/buspirate.py` and
+  `python/yasl/tcs34725.py` read information from a TCS34725 connected
+  via buspirate.
+
+* `test_tigard_ssd1306.py` and `python/yasl/vendored_ssd1306` connect,
+  using the SPI interface on the
+  [Tigard](https://github.com/tigard-tools/tigard), to a SSD1306 OLED
+  display.
+
+* `test_tsl2591.py` and `python/yasl/vendored_tsl2591` connect to a
+  TSL2591 light sensor via the I2C interface on the Buspirate.
 
 ## RFDuino
 
 Implementation of the remote I2C protocol (see
 `puremodules/protocol.c`) for the RFDuino.
 
+## HomerGW and HomerWEB
+
+* `homergw` is my personal home sensor hub.
+
+* `homerweb` is a Web interface to `homergw`.
