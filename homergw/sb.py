@@ -7,6 +7,7 @@ import struct
 from typing import Dict
 import julian  # type: ignore
 import datetime
+import time
 
 
 def get_signed_short(b, i):
@@ -27,14 +28,20 @@ class Impl(hrgw.Producer):
 
     def __init__(self):
         self.running = True
+        self.last_t = 0
+        self.last_hum = 0
+        self.minsec = 300
 
     def register_args(self, arg: argparse.ArgumentParser):
         arg.add_argument("--sb-list", type=str, default="",
                          help="Comma separated list of label@mac")
+        arg.add_argument("--sb-minsec", type=int, default=300,
+                         help="Minimum time between data logged")
 
     async def start(self, args, coll: hrgw.Collector):
         if args.sb_list == "":
             return
+        self.minsec = args.sb_minsec
         self.coll = coll
         await self.bt_init("hci0")
         self.macs: Dict[str, str] = {}
@@ -89,10 +96,17 @@ class Impl(hrgw.Producer):
             if len(data) != 18:
                 continue
             now = julian.to_jd(datetime.datetime.now())
-            await self.coll.push(
-                f"SB_BAT_{label}", get_unsigned_short(data, 8), now)
-            await self.coll.push(
-                f"SB_T_{label}", get_signed_short(data, 10) / 16.0, now)
-            if key in (16, 17, 18):
+            tick = time.time()
+            if tick > self.last_t + self.minsec:
                 await self.coll.push(
-                    f"SB_HUM_{label}", get_signed_short(data, 12) / 16.0, now)
+                    f"SB_BAT_{label}", get_unsigned_short(data, 8), now)
+                await self.coll.push(
+                    f"SB_T_{label}", get_signed_short(data, 10) / 16.0, now)
+                self.last_t = tick
+            if key in (16, 17, 18):
+                if tick > self.last_hum + self.minsec:
+                    await self.coll.push(
+                        f"SB_HUM_{label}",
+                        get_signed_short(data, 12) / 16.0,
+                        now)
+                    self.last_hum = tick
