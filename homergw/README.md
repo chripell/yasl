@@ -94,3 +94,19 @@ Parameters:
 
 * `--bwe-refresh-time`
 * `--bwe-ifaces`
+
+## sb
+
+Producer, handles a [Sensor Blue module via
+Bluetooth](https://www.evolware.org/?p=642).
+
+Data:
+
+* `SB_BAT_{label}`
+* `SB_T_{label}`
+* `SB_HUM_{label}`
+
+Parameters:
+
+* `--sb-list` comma separated list of label@mac.
+* `--sb-minsec` minimum time between data logged.
