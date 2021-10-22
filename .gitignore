@@ -58,3 +58,4 @@ compile_commands.json
 # Misc
 .ccls-cache/
 python/out.csv
+*/__pycache__

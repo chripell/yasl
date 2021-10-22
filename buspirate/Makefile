@@ -19,6 +19,11 @@ libyasl_buspirate.so: buspirate.c
 clean:
 	rm -f *~ *.o yasl_cli depend.d *.so yasl/*~
 
+.PHONY: compile_commands.json
+compile_commands.json:
+	make clean
+	compiledb make
+
 depend:
 	$(CC) -M ${SRCS} > depend.d
 
