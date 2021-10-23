@@ -59,3 +59,5 @@ compile_commands.json
 .ccls-cache/
 python/out.csv
 */__pycache__
+TAGS
+
