@@ -1,9 +1,10 @@
 .control {
     display:grid;
-    grid-template-columns: max-content max-content max-content  max-content;
+    grid-template-columns: max-content max-content max-content max-content;
     grid-gap:1px;
     padding: 3px 3px 3px 3px;
 }
 .control label       { text-align:right; }
 .control label:after { content: ":"; }
+.control input[type=text] { width: 8em; }
 .control stale { color: #ff0000; }
