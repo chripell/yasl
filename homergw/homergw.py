@@ -37,6 +37,7 @@ if __name__ == "__main__":
     register("getmqtt")
     register("bwe")
     register("sb")
+    register("file_watch")
     # Registration finished.
     hub.register_args(parser)
     args = parser.parse_args()

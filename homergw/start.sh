@@ -12,4 +12,5 @@ exec $DIR/homergw.py \
      --bwe-iface=enp1s0u1 \
      --pinger-c=60 \
      --pinger-w=61 \
-     --sb-list=0@70:F1:00:00:0F:7B
+     --sb-list=0@70:F1:00:00:0F:7B \
+     --file-watchers=/mnt/d/www/attimis/last.jpg:600
