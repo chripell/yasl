@@ -31,6 +31,7 @@ if __name__ == "__main__":
     # Registration of consumers/producers:
     register("datastore", consumer=True)
     register("disphat", consumer=True)
+    register("printer", consumer=True)
     register("pinger")
     register("sensor52")
     register("getmqtt")
