@@ -44,11 +44,11 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
         a = [v for (v, _) in (i.split(":") for i in ra)]
         self.monitored = {k: 0.0 for k in a}
         if args.disphat_alerts == "":
-            ral = []
+            alerts_text = []
         else:
-            ral = [i.strip() for i in args.disphat_alerts.split(",")]
+            alerts_text = [i.strip() for i in args.disphat_alerts.split(",")]
         alert_vars = {'V': self.monitored}
-        alerts = [lambda: eval(i, alert_vars) for i in ral]
+        alerts = [lambda: eval(i, alert_vars) for i in alerts_text]
         self.cur = 0
         lcd.set_contrast(args.disphat_contrast)
         self.showtime = args.disphat_showtime
@@ -64,7 +64,15 @@ class Impl(hrgw.Collector, hrgw.SleeperMixin):
             else:
                 backlight.off()
             await self.sleep(0.1)
-            if any(a() for a in alerts):
+            alerted = False
+            for i, al in enumerate(alerts):
+                try:
+                    if al():
+                        alerted = True
+                        print(f"ALERT: {alerts_text[i]}\n", flush=True)
+                except NameError:
+                    print(f"ALERT BROKEN: {alerts_text[i]}\n", flush=True)
+            if alerted:
                 backlight.set_graph(alert_led / 20.0)
             else:
                 backlight.set_graph(0)
