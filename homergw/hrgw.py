@@ -18,7 +18,7 @@ class Data(typing.NamedTuple):
 class Collector(abc.ABC):
 
     @abc.abstractmethod
-    def push(self, name: str, data: float):
+    def push(self, name: str, data: float, now: float = -1):
         pass
 
 
